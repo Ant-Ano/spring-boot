@@ -16,25 +16,29 @@
 
 package org.springframework.boot.gradle.tasks.bundling;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.options.Option;
 
 import org.springframework.boot.buildpack.platform.build.BuildRequest;
 import org.springframework.boot.buildpack.platform.build.Builder;
-import org.springframework.boot.buildpack.platform.docker.DockerException;
+import org.springframework.boot.buildpack.platform.build.Creator;
+import org.springframework.boot.buildpack.platform.docker.transport.DockerEngineException;
 import org.springframework.boot.buildpack.platform.docker.type.ImageName;
 import org.springframework.boot.buildpack.platform.docker.type.ImageReference;
 import org.springframework.boot.buildpack.platform.io.ZipFileTarArchive;
+import org.springframework.boot.gradle.util.VersionExtractor;
 import org.springframework.util.StringUtils;
 
 /**
@@ -42,38 +46,52 @@ import org.springframework.util.StringUtils;
  * <a href="https://buildpacks.io">buildpack</a>.
  *
  * @author Andy Wilkinson
+ * @author Scott Frederick
  * @since 2.3.0
  */
 public class BootBuildImage extends DefaultTask {
 
-	private Supplier<File> jar;
+	private static final String BUILDPACK_JVM_VERSION_KEY = "BP_JVM_VERSION";
+
+	private RegularFileProperty jar;
+
+	private Property<JavaVersion> targetJavaVersion;
 
 	private String imageName;
 
 	private String builder;
 
-	private Map<String, String> environment = new HashMap<String, String>();
+	private String runImage;
+
+	private Map<String, String> environment = new HashMap<>();
 
 	private boolean cleanCache;
 
 	private boolean verboseLogging;
 
-	/**
-	 * Configures this task to create an image from the given {@code bootJar} task. This
-	 * task is also configured to depend upon the given task.
-	 * @param bootJar the fat jar from which the image should be created.
-	 */
-	public void from(BootJar bootJar) {
-		dependsOn(bootJar);
-		this.jar = () -> bootJar.getArchiveFile().get().getAsFile();
+	public BootBuildImage() {
+		this.jar = getProject().getObjects().fileProperty();
+		this.targetJavaVersion = getProject().getObjects().property(JavaVersion.class);
 	}
 
 	/**
-	 * Configures this task to create an image from the given jar file.
-	 * @param jar the jar from which the image should be created.
+	 * Returns the property for the jar file from which the image will be built.
+	 * @return the jar property
 	 */
-	public void from(File jar) {
-		this.jar = () -> jar;
+	@Input
+	public RegularFileProperty getJar() {
+		return this.jar;
+	}
+
+	/**
+	 * Returns the target Java version of the project (e.g. as provided by the
+	 * {@code targetCompatibility} build property).
+	 * @return the target Java version
+	 */
+	@Input
+	@Optional
+	public Property<JavaVersion> getTargetJavaVersion() {
+		return this.targetJavaVersion;
 	}
 
 	/**
@@ -92,6 +110,7 @@ public class BootBuildImage extends DefaultTask {
 	 * Sets the name of the image that will be built.
 	 * @param imageName name of the image
 	 */
+	@Option(option = "imageName", description = "The name of the image to generate")
 	public void setImageName(String imageName) {
 		this.imageName = imageName;
 	}
@@ -111,8 +130,29 @@ public class BootBuildImage extends DefaultTask {
 	 * Sets the builder that will be used to build the image.
 	 * @param builder the builder
 	 */
+	@Option(option = "builder", description = "The name of the builder image to use")
 	public void setBuilder(String builder) {
 		this.builder = builder;
+	}
+
+	/**
+	 * Returns the run image that will be included in the built image. When {@code null},
+	 * the run image bundled with the builder will be used.
+	 * @return the run image
+	 */
+	@Input
+	@Optional
+	public String getRunImage() {
+		return this.runImage;
+	}
+
+	/**
+	 * Sets the run image that will be included in the built image.
+	 * @param runImage the run image
+	 */
+	@Option(option = "runImage", description = "The name of the run image to use")
+	public void setRunImage(String runImage) {
+		this.runImage = runImage;
 	}
 
 	/**
@@ -185,16 +225,15 @@ public class BootBuildImage extends DefaultTask {
 	}
 
 	@TaskAction
-	void buildImage() throws DockerException, IOException {
+	void buildImage() throws DockerEngineException, IOException {
 		Builder builder = new Builder();
 		BuildRequest request = createRequest();
 		builder.build(request);
 	}
 
 	BuildRequest createRequest() {
-		BuildRequest request = customize(
-				BuildRequest.of(determineImageReference(), (owner) -> new ZipFileTarArchive(this.jar.get(), owner)));
-		return request;
+		return customize(BuildRequest.of(determineImageReference(),
+				(owner) -> new ZipFileTarArchive(this.jar.get().getAsFile(), owner)));
 	}
 
 	private ImageReference determineImageReference() {
@@ -210,15 +249,49 @@ public class BootBuildImage extends DefaultTask {
 	}
 
 	private BuildRequest customize(BuildRequest request) {
-		if (StringUtils.hasText(this.builder)) {
-			request = request.withBuilder(ImageReference.of(this.builder));
-		}
-		if (this.environment != null && !this.environment.isEmpty()) {
-			request = request.withEnv(this.environment);
-		}
+		request = customizeBuilder(request);
+		request = customizeRunImage(request);
+		request = customizeEnvironment(request);
+		request = customizeCreator(request);
 		request = request.withCleanCache(this.cleanCache);
 		request = request.withVerboseLogging(this.verboseLogging);
 		return request;
+	}
+
+	private BuildRequest customizeBuilder(BuildRequest request) {
+		if (StringUtils.hasText(this.builder)) {
+			return request.withBuilder(ImageReference.of(this.builder));
+		}
+		return request;
+	}
+
+	private BuildRequest customizeRunImage(BuildRequest request) {
+		if (StringUtils.hasText(this.runImage)) {
+			return request.withRunImage(ImageReference.of(this.runImage));
+		}
+		return request;
+	}
+
+	private BuildRequest customizeEnvironment(BuildRequest request) {
+		if (this.environment != null && !this.environment.isEmpty()) {
+			request = request.withEnv(this.environment);
+		}
+		if (this.targetJavaVersion.isPresent() && !request.getEnv().containsKey(BUILDPACK_JVM_VERSION_KEY)) {
+			request = request.withEnv(BUILDPACK_JVM_VERSION_KEY, translateTargetJavaVersion());
+		}
+		return request;
+	}
+
+	private BuildRequest customizeCreator(BuildRequest request) {
+		String springBootVersion = VersionExtractor.forClass(BootBuildImage.class);
+		if (StringUtils.hasText(springBootVersion)) {
+			return request.withCreator(Creator.withVersion(springBootVersion));
+		}
+		return request;
+	}
+
+	private String translateTargetJavaVersion() {
+		return this.targetJavaVersion.get().getMajorVersion() + ".*";
 	}
 
 }

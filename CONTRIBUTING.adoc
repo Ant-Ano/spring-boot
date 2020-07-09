@@ -52,7 +52,8 @@ added after the original pull request but before a merge.
   automatically. You can also install the
   https://github.com/spring-io/spring-javaformat/#intellij-idea[Spring JavaFormat IntelliJ
   Plugin] or format the code from the Gradle build by running
-  `./gradlew format`.
+  `./gradlew format`. Note that if you have format violations in `buildSrc`, you can fix
+  them by running `./gradlew -p buildSrc format` from the project root directory.
 * The build includes checkstyle rules for many of our code conventions. Run
   `./gradlew checkstyleMain checkstyleTest` if you want to check you changes are
   compliant.
@@ -75,7 +76,7 @@ added after the original pull request but before a merge.
 
 == Working with the Code
 If you don't have an IDE preference we would recommend that you use
-https://spring.io/tools/sts[Spring Tools Suite] or
+https://spring.io/tools[Spring Tool Suite] or
 https://eclipse.org[Eclipse] when working with the code. We use the
 https://projects.eclipse.org/projects/tools.buildship[Buildship] Eclipse plugin for Gradle
 support. Other IDEs and tools should also work without issue.

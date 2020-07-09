@@ -5,7 +5,6 @@ plugins {
 description = "Starter for building RESTful web applications using JAX-RS and Jersey. An alternative to spring-boot-starter-web"
 
 dependencies {
-	api(platform(project(":spring-boot-project:spring-boot-dependencies")))
 	api(project(":spring-boot-project:spring-boot-starters:spring-boot-starter-json"))
 	api(project(":spring-boot-project:spring-boot-starters:spring-boot-starter-tomcat"))
 	api(project(":spring-boot-project:spring-boot-starters:spring-boot-starter-validation"))
@@ -17,7 +16,7 @@ dependencies {
 		exclude group: "jakarta.el", module: "jakarta.el-api"
 		exclude group: "org.glassfish", module: "jakarta.el"
 	}
-	api("org.glassfish.jersey.ext:jersey-spring4")
+	api("org.glassfish.jersey.ext:jersey-spring5")
 	api("org.glassfish.jersey.media:jersey-media-json-jackson")
 }
 

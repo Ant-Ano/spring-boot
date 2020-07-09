@@ -1,12 +1,13 @@
 [[run]]
-== Running your application with Maven
-
+== Running your Application with Maven
 The plugin includes a run goal which can be used to launch your application from the command line, as shown in the following example:
 
 [indent=0]
 ----
 	$ mvn spring-boot:run
 ----
+
+Application arguments can be specified using the `arguments` parameter, see <<run-example-application-arguments,using application arguments>> for more details.
 
 By default the application is executed in a forked process and setting properties on the command-line will not affect the application.
 If you need to specify some JVM arguments (i.e. for debugging purposes), you can use the `jvmArguments` parameter, see <<run-example-debug,Debug the application>> for more details.
@@ -63,7 +64,7 @@ You can restore it at any time by configuring your project:
 </build>
 ----
 
-When `addResources` is enabled, any `src/main/resources` folder will be added to the application classpath when you run the application and any duplicate found in `target/classes` will be removed.
+When `addResources` is enabled, any `src/main/resources` directory will be added to the application classpath when you run the application and any duplicate found in `target/classes` will be removed.
 This allows hot refreshing of resources which can be very useful when developing web applications.
 For example, you can work on HTML, CSS or JavaScript files and see your changes immediately without recompiling your application.
 It is also a helpful way of allowing your front end developers to work without needing to download and install a Java IDE.
@@ -202,6 +203,43 @@ Any String typed Maven variable can be passed as system properties.
 Any attempt to pass any other Maven variable type (e.g. a `List` or a `URL` variable) will cause the variable expression to be passed literally (unevaluated).
 
 Environment variables defined this way take precedence over existing values.
+
+
+
+[[run-example-application-arguments]]
+==== Using Application Arguments
+Application arguments can be specified using the `arguments` attribute.
+The following example sets two arguments: `property1` and `property2=42`:
+
+[source,xml,indent=0,subs="verbatim,attributes"]
+----
+<project>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>{gradle-project-version}</version>
+				<configuration>
+					<arguments>
+						<argument>property1</argument>
+						<argument>property2=${my.value}</argument>
+					</arguments>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+----
+
+On the command-line, arguments are separated by a space the same way `jvmArguments` are.
+If an argument contains a space, make sure to quote it.
+In the following example, two arguments are available: `property1` and `property2=Hello World`:
+
+[indent=0]
+----
+	$ mvn spring-boot:run -Dspring-boot.run.arguments="property1 'property2=Hello World'"
+----
 
 
 

@@ -19,7 +19,6 @@ package org.springframework.boot.autoconfigure.web.embedded;
 import java.time.Duration;
 import java.util.Map;
 
-import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,14 +26,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
 import reactor.netty.http.server.HttpServer;
-import reactor.netty.tcp.TcpServer;
 
 import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.boot.autoconfigure.web.ServerProperties.ForwardHeadersStrategy;
 import org.springframework.boot.context.properties.source.ConfigurationPropertySources;
 import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory;
 import org.springframework.boot.web.embedded.netty.NettyServerCustomizer;
 import org.springframework.mock.env.MockEnvironment;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -85,14 +83,6 @@ class NettyWebServerFactoryCustomizerTests {
 	}
 
 	@Test
-	void setUseForwardHeaders() {
-		this.serverProperties.setUseForwardHeaders(true);
-		NettyReactiveWebServerFactory factory = mock(NettyReactiveWebServerFactory.class);
-		this.customizer.customize(factory);
-		verify(factory).setUseForwardHeaders(true);
-	}
-
-	@Test
 	void forwardHeadersWhenStrategyIsNativeShouldConfigureValve() {
 		this.serverProperties.setForwardHeadersStrategy(ServerProperties.ForwardHeadersStrategy.NATIVE);
 		NettyReactiveWebServerFactory factory = mock(NettyReactiveWebServerFactory.class);
@@ -110,30 +100,6 @@ class NettyWebServerFactoryCustomizerTests {
 	}
 
 	@Test
-	void setServerConnectionTimeoutAsZero() {
-		setupServerConnectionTimeout(Duration.ZERO);
-		NettyReactiveWebServerFactory factory = mock(NettyReactiveWebServerFactory.class);
-		this.customizer.customize(factory);
-		verifyConnectionTimeout(factory, null);
-	}
-
-	@Test
-	void setServerConnectionTimeoutAsMinusOne() {
-		setupServerConnectionTimeout(Duration.ofNanos(-1));
-		NettyReactiveWebServerFactory factory = mock(NettyReactiveWebServerFactory.class);
-		this.customizer.customize(factory);
-		verifyConnectionTimeout(factory, 0);
-	}
-
-	@Test
-	void setServerConnectionTimeout() {
-		setupServerConnectionTimeout(Duration.ofSeconds(1));
-		NettyReactiveWebServerFactory factory = mock(NettyReactiveWebServerFactory.class);
-		this.customizer.customize(factory);
-		verifyConnectionTimeout(factory, 1000);
-	}
-
-	@Test
 	void setConnectionTimeout() {
 		setupConnectionTimeout(Duration.ofSeconds(1));
 		NettyReactiveWebServerFactory factory = mock(NettyReactiveWebServerFactory.class);
@@ -141,7 +107,6 @@ class NettyWebServerFactoryCustomizerTests {
 		verifyConnectionTimeout(factory, 1000);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void verifyConnectionTimeout(NettyReactiveWebServerFactory factory, Integer expected) {
 		if (expected == null) {
 			verify(factory, never()).addServerCustomizers(any(NettyServerCustomizer.class));
@@ -150,20 +115,12 @@ class NettyWebServerFactoryCustomizerTests {
 		verify(factory, times(1)).addServerCustomizers(this.customizerCaptor.capture());
 		NettyServerCustomizer serverCustomizer = this.customizerCaptor.getValue();
 		HttpServer httpServer = serverCustomizer.apply(HttpServer.create());
-		TcpServer tcpConfiguration = ReflectionTestUtils.invokeMethod(httpServer, "tcpConfiguration");
-		ServerBootstrap bootstrap = tcpConfiguration.configure();
-		Map<Object, Object> options = (Map<Object, Object>) ReflectionTestUtils.getField(bootstrap, "options");
-		assertThat(options).containsEntry(ChannelOption.CONNECT_TIMEOUT_MILLIS, expected);
-	}
-
-	private void setupServerConnectionTimeout(Duration connectionTimeout) {
-		this.serverProperties.setUseForwardHeaders(null);
-		this.serverProperties.setMaxHttpHeaderSize(null);
-		this.serverProperties.setConnectionTimeout(connectionTimeout);
+		Map<ChannelOption<?>, ?> options = httpServer.configuration().options();
+		assertThat(options.get(ChannelOption.CONNECT_TIMEOUT_MILLIS)).isEqualTo(expected);
 	}
 
 	private void setupConnectionTimeout(Duration connectionTimeout) {
-		this.serverProperties.setUseForwardHeaders(null);
+		this.serverProperties.setForwardHeadersStrategy(ForwardHeadersStrategy.NONE);
 		this.serverProperties.setMaxHttpHeaderSize(null);
 		this.serverProperties.getNetty().setConnectionTimeout(connectionTimeout);
 	}

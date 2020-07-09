@@ -2,204 +2,124 @@
 	"description": "Ubuntu bionic base image with buildpacks for Java, NodeJS and Golang",
 	"buildpacks": [
 		{
-			"id": "org.cloudfoundry.debug",
-			"version": "v1.0.106",
-			"latest": true
-		},
-		{
-			"id": "org.cloudfoundry.go",
-			"version": "v0.0.2",
-			"latest": true
-		},
-		{
-			"id": "org.cloudfoundry.springautoreconfiguration",
-			"version": "v1.0.113",
-			"latest": true
-		},
-		{
-			"id": "org.cloudfoundry.buildsystem",
-			"version": "v1.0.133",
-			"latest": true
-		},
-		{
-			"id": "org.cloudfoundry.procfile",
-			"version": "v1.0.41",
-			"latest": true
-		},
-		{
-			"id": "org.cloudfoundry.nodejs",
-			"version": "v0.0.5",
-			"latest": true
-		},
-		{
-			"id": "org.cloudfoundry.distzip",
-			"version": "v1.0.101",
-			"latest": true
-		},
-		{
-			"id": "org.cloudfoundry.jdbc",
-			"version": "v1.0.107",
-			"latest": true
-		},
-		{
-			"id": "org.cloudfoundry.azureapplicationinsights",
-			"version": "v1.0.105",
-			"latest": true
+			"id": "org.cloudfoundry.googlestackdriver",
+			"version": "v1.1.11"
 		},
 		{
 			"id": "org.cloudfoundry.springboot",
-			"version": "v1.0.112",
-			"latest": true
+			"version": "v1.2.13"
 		},
 		{
-			"id": "org.cloudfoundry.openjdk",
-			"version": "v1.0.58",
-			"latest": true
+			"id": "org.cloudfoundry.debug",
+			"version": "v1.2.11"
 		},
 		{
 			"id": "org.cloudfoundry.tomcat",
-			"version": "v1.1.24",
-			"latest": true
+			"version": "v1.3.18"
 		},
 		{
-			"id": "org.cloudfoundry.googlestackdriver",
-			"version": "v1.0.54",
-			"latest": true
+			"id": "org.cloudfoundry.go",
+			"version": "v0.0.4"
 		},
 		{
-			"id": "org.cloudfoundry.jmx",
-			"version": "v1.0.107",
-			"latest": true
+			"id": "org.cloudfoundry.openjdk",
+			"version": "v1.2.14"
 		},
 		{
-			"id": "org.cloudfoundry.archiveexpanding",
-			"version": "v1.0.99",
-			"latest": true
+			"id": "org.cloudfoundry.buildsystem",
+			"version": "v1.2.15"
 		},
 		{
 			"id": "org.cloudfoundry.jvmapplication",
-			"version": "v1.0.82",
-			"latest": true
+			"version": "v1.1.12"
+		},
+		{
+			"id": "org.cloudfoundry.springautoreconfiguration",
+			"version": "v1.1.11"
+		},
+		{
+			"id": "org.cloudfoundry.archiveexpanding",
+			"version": "v1.0.102"
+		},
+		{
+			"id": "org.cloudfoundry.jmx",
+			"version": "v1.1.12"
+		},
+		{
+			"id": "org.cloudfoundry.nodejs",
+			"version": "v2.0.8"
+		},
+		{
+			"id": "org.cloudfoundry.jdbc",
+			"version": "v1.1.14"
+		},
+		{
+			"id": "org.cloudfoundry.procfile",
+			"version": "v1.1.12"
+		},
+		{
+			"id": "org.cloudfoundry.dotnet-core",
+			"version": "v0.0.6"
+		},
+		{
+			"id": "org.cloudfoundry.azureapplicationinsights",
+			"version": "v1.1.12"
+		},
+		{
+			"id": "org.cloudfoundry.distzip",
+			"version": "v1.1.12"
 		},
 		{
 			"id": "org.cloudfoundry.dep",
-			"version": "0.0.64",
-			"latest": true
+			"version": "0.0.101"
 		},
 		{
 			"id": "org.cloudfoundry.go-compiler",
-			"version": "0.0.55",
-			"latest": true
+			"version": "0.0.105"
 		},
 		{
 			"id": "org.cloudfoundry.go-mod",
-			"version": "0.0.58",
-			"latest": true
+			"version": "0.0.89"
 		},
 		{
 			"id": "org.cloudfoundry.node-engine",
-			"version": "0.0.102",
-			"latest": true
+			"version": "0.0.163"
 		},
 		{
 			"id": "org.cloudfoundry.npm",
-			"version": "0.0.63",
-			"latest": true
+			"version": "0.1.3"
 		},
 		{
-			"id": "org.cloudfoundry.yarn",
-			"version": "0.0.69",
-			"latest": true
-		}
-	],
-	"groups": [
-		{
-			"buildpacks": [
-				{
-					"id": "org.cloudfoundry.archiveexpanding",
-					"version": "v1.0.99",
-					"optional": true
-				},
-				{
-					"id": "org.cloudfoundry.openjdk",
-					"version": "v1.0.58"
-				},
-				{
-					"id": "org.cloudfoundry.buildsystem",
-					"version": "v1.0.133",
-					"optional": true
-				},
-				{
-					"id": "org.cloudfoundry.jvmapplication",
-					"version": "v1.0.82"
-				},
-				{
-					"id": "org.cloudfoundry.tomcat",
-					"version": "v1.1.24",
-					"optional": true
-				},
-				{
-					"id": "org.cloudfoundry.springboot",
-					"version": "v1.0.112",
-					"optional": true
-				},
-				{
-					"id": "org.cloudfoundry.distzip",
-					"version": "v1.0.101",
-					"optional": true
-				},
-				{
-					"id": "org.cloudfoundry.procfile",
-					"version": "v1.0.41",
-					"optional": true
-				},
-				{
-					"id": "org.cloudfoundry.azureapplicationinsights",
-					"version": "v1.0.105",
-					"optional": true
-				},
-				{
-					"id": "org.cloudfoundry.debug",
-					"version": "v1.0.106",
-					"optional": true
-				},
-				{
-					"id": "org.cloudfoundry.googlestackdriver",
-					"version": "v1.0.54",
-					"optional": true
-				},
-				{
-					"id": "org.cloudfoundry.jdbc",
-					"version": "v1.0.107",
-					"optional": true
-				},
-				{
-					"id": "org.cloudfoundry.jmx",
-					"version": "v1.0.107",
-					"optional": true
-				},
-				{
-					"id": "org.cloudfoundry.springautoreconfiguration",
-					"version": "v1.0.113",
-					"optional": true
-				}
-			]
+			"id": "org.cloudfoundry.yarn-install",
+			"version": "0.1.10"
 		},
 		{
-			"buildpacks": [
-				{
-					"id": "org.cloudfoundry.nodejs",
-					"version": "v0.0.5"
-				}
-			]
+			"id": "org.cloudfoundry.dotnet-core-aspnet",
+			"version": "0.0.118"
 		},
 		{
-			"buildpacks": [
-				{
-					"id": "org.cloudfoundry.go",
-					"version": "v0.0.2"
-				}
-			]
+			"id": "org.cloudfoundry.dotnet-core-build",
+			"version": "0.0.68"
+		},
+		{
+			"id": "org.cloudfoundry.dotnet-core-conf",
+			"version": "0.0.115"
+		},
+		{
+			"id": "org.cloudfoundry.dotnet-core-runtime",
+			"version": "0.0.127"
+		},
+		{
+			"id": "org.cloudfoundry.dotnet-core-sdk",
+			"version": "0.0.122"
+		},
+		{
+			"id": "org.cloudfoundry.icu",
+			"version": "0.0.43"
+		},
+		{
+			"id": "org.cloudfoundry.node-engine",
+			"version": "0.0.158"
 		}
 	],
 	"stack": {
@@ -209,14 +129,14 @@
 		}
 	},
 	"lifecycle": {
-		"version": "0.5.0",
+		"version": "0.7.2",
 		"api": {
 			"buildpack": "0.2",
-			"platform": "0.1"
+			"platform": "0.3"
 		}
 	},
 	"createdBy": {
 		"name": "Pack CLI",
-		"version": "dev-2019-11-19-22:34:59"
+		"version": "v0.9.0 (git sha: d42c384a39f367588f2653f2a99702db910e5ad7)"
 	}
 }
